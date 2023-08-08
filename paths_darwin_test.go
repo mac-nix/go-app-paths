@@ -4,6 +4,7 @@
 package gap
 
 import (
+	"os"
 	"testing"
 )
 
@@ -50,6 +51,9 @@ func TestPaths(t *testing.T) {
 		},
 	}
 
+	// clear XDG_CONFIG_HOME, in case this is set by env of user running the tests
+	os.Unsetenv("XDG_CONFIG_HOME")
+
 	for _, tt := range tests {
 		paths, err := tt.scope.DataDirs()
 		if err != nil {
@@ -90,5 +94,17 @@ func TestPaths(t *testing.T) {
 		if path != expandUser(tt.logFile) {
 			t.Errorf("Expected log path: %s - got: %s", tt.logFile, path)
 		}
+	}
+
+  // test w/ XDG_CONFIG_HOME env var
+  os.Setenv("XDG_CONFIG_HOME","/some/path/to/somewhere")
+	testpath := "/some/path/to/somewhere/foobar/foobar.conf"
+	testscope := NewScope(User, "foobar")
+	path, err := testscope.ConfigPath(testscope.App + ".conf")
+	if err != nil {
+		t.Errorf("Error retrieving config path: %s", err)
+	}
+	if path != testpath {
+		t.Errorf("Expected config path: %s - got: %s", testpath, path)
 	}
 }
