@@ -4,6 +4,7 @@
 package gap
 
 import (
+	"os"
 	"path/filepath"
 )
 
@@ -72,7 +73,11 @@ func (s *Scope) configDir() (string, error) {
 		return defaultConfigDir, nil
 
 	case User:
-		return expandUser("~" + defaultConfigDir), nil
+		path := os.Getenv("XDG_CONFIG_HOME")
+		if path == "" {
+			return expandUser("~" + defaultConfigDir), nil
+		}
+		return path, nil
 
 	case CustomHome:
 		return filepath.Join(s.CustomHome, defaultConfigDir), nil
